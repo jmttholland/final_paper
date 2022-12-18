@@ -605,25 +605,25 @@ summary(logit_model_white_2008) # White logit 2008
 logit_model_white_2007 <- glm(data = data_2007, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_white_2007) # White logit 2007
 
-# White
-logit_model_white_2019 <- glm(data = data_2019, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2019) # White logit 2019
-logit_model_white_2014 <- glm(data = data_2014, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2014) # White logit 2014
-logit_model_white_2013 <- glm(data = data_2013, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2013) # White logit 2013
-logit_model_white_2012 <- glm(data = data_2012, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2012) # White logit 2012
-logit_model_white_2011 <- glm(data = data_2011, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2011) # White logit 2011
-logit_model_white_2010 <- glm(data = data_2010, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2010) # White logit 2010
-logit_model_white_2009 <- glm(data = data_2009, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2009) # White logit 2009
-logit_model_white_2008 <- glm(data = data_2008, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2008) # White logit 2008 
-logit_model_white_2007 <- glm(data = data_2007, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_white_2007) # White logit 2007
+# Asian and Pacific Islander
+logit_model_asian_and_pi_2019 <- glm(data = data_2019, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2019) # Asian and Pacific Islander logit 2019
+logit_model_asian_and_pi_2014 <- glm(data = data_2014, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2014) # Asian and Pacific Islander logit 2014
+logit_model_asian_and_pi_2013 <- glm(data = data_2013, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2013) # Asian and Pacific Islander logit 2013
+logit_model_asian_and_pi_2012 <- glm(data = data_2012, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2012) # Asian and Pacific Islander logit 2012
+logit_model_asian_and_pi_2011 <- glm(data = data_2011, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2011) # Asian and Pacific Islander logit 2011
+logit_model_asian_and_pi_2010 <- glm(data = data_2010, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2010) # Asian and Pacific Islander logit 2010
+logit_model_asian_and_pi_2009 <- glm(data = data_2009, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2009) # Asian and Pacific Islander logit 2009
+logit_model_asian_and_pi_2008 <- glm(data = data_2008, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2008) # Asian and Pacific Islander logit 2008 
+logit_model_asian_and_pi_2007 <- glm(data = data_2007, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2007) # Asian and Pacific Islander logit 2007
 
 
 
