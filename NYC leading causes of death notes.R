@@ -91,6 +91,10 @@ levels(useable_data$Leading.Cause)
 useable_data$Leading.Cause <-  factor(useable_data$Leading.Cause)
 levels(useable_data$Leading.Cause)
 
+# Creating male and female subsets
+useable_male <- subset(useable_data, useable_data$Sex == "Male")
+useable_female <- subset(useable_data, useable_data$Sex == "Female")
+
 # Creating yearly subsets and dropping unused causes from factor for each year
 list_of_years <- split(useable_data, useable_data$Year)
 colnames(list_of_years$`2007`) <- colnames(useable_data)
@@ -544,8 +548,7 @@ aadr_mean_differences_by_race_2019 <- list(mean_differences_2019_males_vs_white,
                                              mean_differences_2019_males_vs_black, mean_differences_2019_females_vs_black,
                                              mean_differences_2019_males_vs_asian_and_pi, mean_differences_2019_females_vs_asian_and_pi)
 
-# Logistic regressions by race by year
-# Hispanic
+# Hispanic logistic regressions by race by year
 logit_model_hispanic_2019 <- glm(data = data_2019, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_hispanic_2019) # Hispanic logit 2019
 logit_model_hispanic_2014 <- glm(data = data_2014, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
@@ -564,8 +567,32 @@ logit_model_hispanic_2008 <- glm(data = data_2008, Hispanic ~ Age.Adjusted.Death
 summary(logit_model_hispanic_2008) # Hispanic logit 2008 
 logit_model_hispanic_2007 <- glm(data = data_2007, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_hispanic_2007) # Hispanic logit 2007
+# No statistically significant relationships
 
-# Black
+# Black logit 2019
+logit_model_black_2019 <- glm(data = data_2019, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2019) 
+ggplot(data = data_2019, mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(Black), col = Sex)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) 
+# No statistically significant relationship on black 2019 logit
+logit_model_black_2019_female <- glm(data = subset(useable_female, useable_female$Year == "2019"), Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2019_female) 
+ggplot(data = subset(useable_female, useable_female$Year == "2019"), mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(Black), col = Sex)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) 
+# Nor for female alone
+logit_model_black_2019_female <- glm(data = subset(useable_female, useable_female$Year == "2019"), Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2019_female) 
+ggplot(data = subset(useable_female, useable_female$Year == "2019"), mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(Black), col = Sex)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) 
+# Nor for male alone
+ggplot_logit_race_2019_female <- function (race) {
+  ggplot(data = subset(data_2019, data_2019$Sex == "Female"), mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(race), col = Sex)) +
+    geom_point() +
+    geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) 
+}
 logit_model_black_2019 <- glm(data = data_2019, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_black_2019) # Black logit 2019
 logit_model_black_2014 <- glm(data = data_2014, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
@@ -584,8 +611,9 @@ logit_model_black_2008 <- glm(data = data_2008, Black ~ Age.Adjusted.Death.Rate,
 summary(logit_model_black_2008) # Black logit 2008 
 logit_model_black_2007 <- glm(data = data_2007, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_black_2007) # Black logit 2007
+# No statistically significant relationships
 
-# White
+# White logistic regressions by race by year
 logit_model_white_2019 <- glm(data = data_2019, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_white_2019) # White logit 2019
 logit_model_white_2014 <- glm(data = data_2014, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
@@ -604,26 +632,74 @@ logit_model_white_2008 <- glm(data = data_2008, White ~ Age.Adjusted.Death.Rate,
 summary(logit_model_white_2008) # White logit 2008 
 logit_model_white_2007 <- glm(data = data_2007, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_white_2007) # White logit 2007
+# No statistically significant relationships
 
-# Asian and Pacific Islander
-logit_model_asian_and_pi_2019 <- glm(data = data_2019, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2019) # Asian and Pacific Islander logit 2019
-logit_model_asian_and_pi_2014 <- glm(data = data_2014, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2014) # Asian and Pacific Islander logit 2014
-logit_model_asian_and_pi_2013 <- glm(data = data_2013, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2013) # Asian and Pacific Islander logit 2013
-logit_model_asian_and_pi_2012 <- glm(data = data_2012, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2012) # Asian and Pacific Islander logit 2012
-logit_model_asian_and_pi_2011 <- glm(data = data_2011, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2011) # Asian and Pacific Islander logit 2011
-logit_model_asian_and_pi_2010 <- glm(data = data_2010, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2010) # Asian and Pacific Islander logit 2010
-logit_model_asian_and_pi_2009 <- glm(data = data_2009, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2009) # Asian and Pacific Islander logit 2009
-logit_model_asian_and_pi_2008 <- glm(data = data_2008, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2008) # Asian and Pacific Islander logit 2008 
-logit_model_asian_and_pi_2007 <- glm(data = data_2007, Asian and Pacific Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
-summary(logit_model_asian_and_pi_2007) # Asian and Pacific Islander logit 2007
+# Asian_and_Pacific_Islander logistic regressions by race by year
+logit_model_asian_and_pi_2019 <- glm(data = data_2019, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2019) # Asian_and_Pacific_Islander logit 2019
+logit_model_asian_and_pi_2014 <- glm(data = data_2014, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2014) # Asian_and_Pacific_Islander logit 2014
+logit_model_asian_and_pi_2013 <- glm(data = data_2013, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2013) # Asian_and_Pacific_Islander logit 2013
+logit_model_asian_and_pi_2012 <- glm(data = data_2012, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2012) # Asian_and_Pacific_Islander logit 2012
+logit_model_asian_and_pi_2011 <- glm(data = data_2011, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2011) # Asian_and_Pacific_Islander logit 2011
+logit_model_asian_and_pi_2010 <- glm(data = data_2010, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2010) # Asian_and_Pacific_Islander logit 2010
+logit_model_asian_and_pi_2009 <- glm(data = data_2009, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2009) # Asian_and_Pacific_Islander logit 2009
+logit_model_asian_and_pi_2008 <- glm(data = data_2008, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2008) # Asian_and_Pacific_Islander logit 2008 
+logit_model_asian_and_pi_2007 <- glm(data = data_2007, Asian_and_Pacific_Islander ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_asian_and_pi_2007) # Asian_and_Pacific_Islander logit 2007
+# No statistically significant relationships
+
+
+# Regressing by leading cause across all years
+
+# Black women by all significant leading causes from 2019
+logit_female_all_other_causes <- glm(data = subset(useable_female, useable_female$Leading.Cause == "All Other Causes"), 
+                                     as.numeric(Black) ~ Age.Adjusted.Death.Rate, 
+                                     family = binomial(link = logit))
+summary(logit_female_all_other_causes)
+ggplot(data = subset(useable_female, useable_female$Leading.Cause == "All Other Causes"), mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(Black))) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE)
+# All of the data black female data points are above all the other points in terms of death rate for All Other Causes
+
+# Regular linear regression for females across the causes for which the hypothesis tests for 2019 showed any significant relationship
+lm_useable_female_all_other_causes <- lm(data = subset(useable_female, useable_female$Leading.Cause == "All Other Causes"), Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_female_all_other_causes)
+# Significant relationship with 67 more deaths per 100000 expected for black women for 'all other causes' as leading cause
+lm_useable_female_diabetes <- lm(data = subset(useable_female, useable_female$Leading.Cause == "Diabetes Mellitus (E10-E14)"), Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_female_diabetes)
+# Significant relationship with 22 more deaths per 100000 expected for black women for diabetes as leading cause
+lm_useable_female_heart_disease <- lm(data = subset(useable_female, useable_female$Leading.Cause == "Diseases of Heart (I00-I09, I11, I13, I20-I51)"), 
+                                      Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_female_heart_disease)
+# Significant relationship with 107 more deaths per 100000 expected for black women for heart disease as leading cause
+lm_useable_female_hypertension <- lm(data = subset(useable_female, useable_female$Leading.Cause == "Essential Hypertension and Renal Diseases (I10, I12)"), 
+                                      Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_female_hypertension)
+# Significant relationship with 10 more deaths per 100000 expected for black women for hypertension as leading cause
+
+# Regular linear regression for males across the causes for which the hypothesis tests for 2019 showed any significant relationship
+lm_useable_male_all_other_causes <- lm(data = subset(useable_male, useable_male$Leading.Cause == "All Other Causes"), Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_male_all_other_causes)
+# Significant relationship with 95 more deaths per 100000 expected for black men for 'all other causes' as leading cause
+lm_useable_male_diabetes <- lm(data = subset(useable_male, useable_male$Leading.Cause == "Diabetes Mellitus (E10-E14)"), Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_male_diabetes)
+# Significant relationship with 26 more deaths per 100000 expected for black men for diabetes as leading cause
+lm_useable_male_heart_disease <- lm(data = subset(useable_male, useable_male$Leading.Cause == "Diseases of Heart (I00-I09, I11, I13, I20-I51)"), 
+                                      Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_male_heart_disease)
+# Significant relationship with 159 more deaths per 100000 expected for black men for heart disease as leading cause
+lm_useable_male_hypertension <- lm(data = subset(useable_male, useable_male$Leading.Cause == "Essential Hypertension and Renal Diseases (I10, I12)"), 
+                                     Age.Adjusted.Death.Rate ~ Dummy.Race)
+summary(lm_useable_male_hypertension)
+# Significant relationship with 12 more deaths per 100000 expected for black men for hypertension as leading cause
+
 
 
 
