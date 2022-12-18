@@ -12,8 +12,7 @@ diff_of_means_test_stat <- function (var1, var2, n1, n2, diff) {
   return(test_stat)
 }
 
-# Cleaning up data and removing rows where death rate is unavailable as the 
-# data is pretty useless without the death rate, right?
+# Cleaning up data and removing rows where death rate is unavailable as it is our only continuous variable
 data$Age.Adjusted.Death.Rate <-  as.numeric(data$Age.Adjusted.Death.Rate)
 data$Year <- as.factor(data$Year)
 data$Death.Rate <- as.numeric(data$Death.Rate)
@@ -27,6 +26,16 @@ good_data <- complete.cases(data$Age.Adjusted.Death.Rate > 0.1)
 useable_data <- subset(data, good_data)
 nrow(useable_data) # We now now have 819 rows total after death rate NAs are removed
 
+levels(useable_data$Leading.Cause)
+# Changing names of causes for 2019 to correspond to earlier years as there are some changes in coding in 2019 and dropping those factors
+useable_data$Leading.Cause[useable_data$Leading.Cause == "Assault (Homicide: U01-U02, Y87.1, X85-Y09)"] <- "Assault (Homicide: Y87.1, X85-Y09)" 
+useable_data$Leading.Cause[useable_data$Leading.Cause == 
+                             "Accidents Except Drug Poisoning (V01-X39, X43, X45-X59, Y85-Y86)"] <- "Accidents Except Drug Posioning (V01-X39, X43, X45-X59, Y85-Y86)"
+useable_data$Leading.Cause[useable_data$Leading.Cause == "Chronic Liver Disease and Cirrhosis (K70, K73-K74)"] <- "Chronic Liver Disease and Cirrhosis (K70, K73)"
+useable_data$Leading.Cause[useable_data$Leading.Cause == 
+                             "Intentional Self-Harm (Suicide: U03, X60-X84, Y87.0)"] <- "Intentional Self-Harm (Suicide: X60-X84, Y87.0)"
+levels(useable_data$Leading.Cause)
+useable_data$Leading.Cause <- factor(useable_data$Leading.Cause)
 # Adding year dummies
 year_logicals <- NULL
 for (year in levels(useable_data$Year)) {
@@ -59,9 +68,8 @@ colnames(leading_cause_logicals) <- levels(useable_data$Leading.Cause)
 useable_data <- cbind(useable_data, leading_cause_logicals)
 leading_causes <- as.data.frame(summary(useable_data$Leading.Cause))
 
-# Dividing age adjusted death rate by 100,000 to get 'p' for each given observation, as
-# each death rate stat is out of 100,000 and adding variance column for age-adjusted death rate
-
+# Dividing age adjusted death rate by 100,000 to get 'p' for each given observation (as
+# each death rate stat is out of 100,000) and adding variance column for age-adjusted death rate
 useable_data <- cbind(useable_data, age_adjusted_p = useable_data$Age.Adjusted.Death.Rate / 100000)
 useable_data <- cbind(useable_data, 
                       age_adjusted_var = useable_data$age_adjusted_p*(1 - useable_data$age_adjusted_p))
@@ -103,25 +111,41 @@ data_2012 <- as.data.frame(list_of_years$`2012`)
 data_2013 <- as.data.frame(list_of_years$`2013`)
 data_2014 <- as.data.frame(list_of_years$`2014`)
 data_2019 <- as.data.frame(list_of_years$`2019`)
-data_2007$Leading.Cause <- factor(data_2007$Leading.Cause)
-data_2008$Leading.Cause <- factor(data_2008$Leading.Cause)
-data_2009$Leading.Cause <- factor(data_2009$Leading.Cause)
-data_2010$Leading.Cause <- factor(data_2010$Leading.Cause)
-data_2011$Leading.Cause <- factor(data_2011$Leading.Cause)
-data_2012$Leading.Cause <- factor(data_2012$Leading.Cause)
-data_2013$Leading.Cause <- factor(data_2013$Leading.Cause)
-data_2014$Leading.Cause <- factor(data_2014$Leading.Cause)
-data_2019$Leading.Cause <- factor(data_2019$Leading.Cause)
+data_2007 <- cbind(data_2007, leading_cause_factor = factor(data_2007$Leading.Cause))
+data_2008 <- cbind(data_2008, leading_cause_factor = factor(data_2008$Leading.Cause))
+data_2009 <- cbind(data_2009, leading_cause_factor = factor(data_2009$Leading.Cause))
+data_2010 <- cbind(data_2010, leading_cause_factor = factor(data_2010$Leading.Cause))
+data_2011 <- cbind(data_2011, leading_cause_factor = factor(data_2011$Leading.Cause))
+data_2012 <- cbind(data_2012, leading_cause_factor = factor(data_2012$Leading.Cause))
+data_2013 <- cbind(data_2013, leading_cause_factor = factor(data_2013$Leading.Cause))
+data_2014 <- cbind(data_2014, leading_cause_factor = factor(data_2014$Leading.Cause))
+data_2019 <- cbind(data_2019, leading_cause_factor = factor(data_2019$Leading.Cause))
 
-# Graphs and regressions for aggregate data (all years)
+leading_causes_by_year <- cbind("2007" = as.data.frame(table(data_2007$Leading.Cause)),  
+                                "2008" = as.data.frame(table(data_2008$Leading.Cause)), 
+                                "2009" = as.data.frame(table(data_2009$Leading.Cause)), 
+                                "2010" = as.data.frame(table(data_2010$Leading.Cause)), 
+                                "2011" = as.data.frame(table(data_2011$Leading.Cause)), 
+                                "2012" = as.data.frame(table(data_2012$Leading.Cause)), 
+                                "2013" = as.data.frame(table(data_2013$Leading.Cause)),
+                                "2014" = as.data.frame(table(data_2014$Leading.Cause)),
+                                "2019" = as.data.frame(table(data_2019$Leading.Cause)))
 
-  # Age-adjusted death rate by dummy race
+# Initial graphs to get understanding of sex and race trends by death rate
 
-    # Graphs
 ggplot(data = useable_data, mapping = aes(x = Dummy.Race, y = Age.Adjusted.Death.Rate, col = Sex)) +
-  geom_point() 
+  geom_point() # Highest few death rate points are all male; both Black and White seem to have the highest death rate concentrations
 ggplot(data = useable_data, mapping = aes(x = Sex, y = Age.Adjusted.Death.Rate, col = Dummy.Race)) +
-  geom_point()
+  geom_point() # Female death rate more concentrated lower down the death rate axis
+
+# Age-adjusted death rate and dummy race graphs for all years
+
+aggregate_race_regression <- lm(data = useable_data, Age.Adjusted.Death.Rate ~ Hispanic + Black + White + Asian_and_Pacific_Islander)
+summary(aggregate_race_regression)
+# No overall statistically significant relationship, other than a lower death rate per 100000 for Asians and Pacific Islanders, and only significant with 95% confidence.
+# Being black is associated with a small increase in the death rate, but it is not statistically significant in this regression
+
+# 4 logistic regressions, one for each race, to determine likelihood of being one of the four races given a certain death rate
 ggplot_dummy_race <- function (dummy_race, y_title) {
   ggplot(data = useable_data, mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(dummy_race), col = Sex)) +
     geom_point() +
@@ -132,9 +156,10 @@ ggplot_dummy_race(dummy_race = useable_data$Hispanic, y_title = "Hispanic")
 ggplot_dummy_race(dummy_race = useable_data$Black, y_title = "Black")
 ggplot_dummy_race(dummy_race = useable_data$White, y_title = "White")
 ggplot_dummy_race(dummy_race = useable_data$Asian_and_Pacific_Islander, y_title = "Asian and Pacific Islander")
-    # These logistic regression plots give us an idea that there is a higher chance of being black vs all other races as the death rate increases accross all leading causes
+# These logistic regression plots give us an idea that there is a higher chance of being black vs all other races as the death rate increases across all leading causes.
+# There also seems to be a negative relationship between being Asian and PI and increasing death rate
 
-    # Regressions
+# Aggregate race regressions
 logit_model_hispanic_all_years <- glm(useable_data$Hispanic ~ useable_data$Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_hispanic_all_years) # Hispanic logit
 logit_model_black_all_years <- glm(useable_data$Black ~ useable_data$Age.Adjusted.Death.Rate, family = binomial(link = logit))
@@ -143,23 +168,46 @@ logit_model_white_all_years <- glm(useable_data$White ~ useable_data$Age.Adjuste
 summary(logit_model_white_all_years) # White logit
 logit_model_asian_and_pi_all_years <- glm(useable_data$Asian_and_Pacific_Islander ~ useable_data$Age.Adjusted.Death.Rate, family = binomial(link = logit))
 summary(logit_model_asian_and_pi_all_years) # Asian and Pacific Islander logit
-
+# Statistically significant relationships exist for logistic regressions on Black and Asian and Pacific Islander populations
 coefficients_black <- coefficients(logit_model_black_all_years)
 coefficients_asian_and_pi <- coefficients(logit_model_asian_and_pi_all_years)
-odds_given_death_rate_all_years <- NULL
+odds_race_given_death_rate_all_years <- NULL
 for (multiplier in c(1, 100, 200, 300, 400, 500)) {
   odds_black_given_death_rate <- exp(coefficients_black[2] * multiplier)
   p_black_given_death_rate <- exp(coefficients_black[2] * multiplier) / (1 + (exp(coefficients_black[2] * multiplier)))
   odds_asian_and_pi_given_death_rate <- exp(coefficients_asian_and_pi[2] * multiplier)
   p_asian_and_pi_given_death_rate <-exp(coefficients_asian_and_pi[2] * multiplier) / (1 + (exp(coefficients_asian_and_pi[2] * multiplier)))
-  odds_given_death_rate_all_years <- rbind(odds_given_death_rate_all_years, 
+  odds_race_given_death_rate_all_years <- rbind(odds_race_given_death_rate_all_years, 
                                  c(multiplier, odds_black_given_death_rate, p_black_given_death_rate, odds_asian_and_pi_given_death_rate, p_asian_and_pi_given_death_rate))
 }
-colnames(odds_given_death_rate_all_years) <- c("Increase in death rate", "Black odds change", "Probability Black", "Asian and PI odds change", "Probability Asian and PI")
-odds_given_death_rate_all_years <- as.data.frame(odds_given_death_rate_all_years)
-    # Statistically significant relationships exist for logistic regressions on Black and Asian and Pacific Islander populations
-    # For an increase in the death rate of 100, the odds of being black increases by a ratio of 1.4, and the probability of being black goes from just over 1/2 to 6/10
+colnames(odds_race_given_death_rate_all_years) <- c("Increase in death rate", "Black odds change", "Probability Black", "Asian and PI odds change", "Probability Asian and PI")
+odds_race_given_death_rate_all_years <- as.data.frame(odds_race_given_death_rate_all_years)
+    # For an increase in the death rate of 100, the odds of being black increases by about 50%
     # A similar but negative relationship exists for the Asian and Pacific Islander Population
+
+# Age-adjusted death rate and sex
+
+aggregate_sex_regression <- lm(data = useable_data, Age.Adjusted.Death.Rate ~ Sex)
+summary(aggregate_sex_regression)
+# Statistically significant relationship. Being male is associated with, on average for all years and all leading causes, 21 more deaths per 100000 people.
+ggplot(data = useable_data, mapping = aes(x = Age.Adjusted.Death.Rate, y = as.numeric(Sex)-1, col = Dummy.Race)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) +
+  ylab("male = 1")
+logit_model_male_all_years <- glm((as.numeric(useable_data$Sex) - 1) ~ useable_data$Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_male_all_years)
+# This logistic regression for sex shows that there is a statistically significant relationship between a higher death rate and the odds of being male
+coefficients_sex <- coefficients(logit_model_male_all_years)
+odds_male_given_death_rate_all_years <- NULL
+for (multiplier in c(1, 100, 200, 300, 400, 500)) {
+  odds_male_given_death_rate <- exp(coefficients_sex[2] * multiplier)
+  p_male_given_death_rate <- (exp(coefficients_sex[2] * multiplier)) / (1 + (exp(coefficients_sex[2] * multiplier)))
+  odds_male_given_death_rate_all_years <- rbind(odds_male_given_death_rate_all_years, 
+                                                c(multiplier, odds_male_given_death_rate, p_male_given_death_rate))
+}
+colnames(odds_male_given_death_rate_all_years) <- c("Increase in death rate", "Male odds change", "Probability odds change")
+odds_male_given_death_rate_all_years <- as.data.frame(odds_male_given_death_rate_all_years)
+# An increase of 100 in the death rate is associated with an increase in the odds of being male of about 100%
 
 # Analysis by year
 # 2019
@@ -496,215 +544,86 @@ aadr_mean_differences_by_race_2019 <- list(mean_differences_2019_males_vs_white,
                                              mean_differences_2019_males_vs_black, mean_differences_2019_females_vs_black,
                                              mean_differences_2019_males_vs_asian_and_pi, mean_differences_2019_females_vs_asian_and_pi)
 
-# Logisitic regressions for 2019 by race
+# Logistic regressions by race by year
+# Hispanic
+logit_model_hispanic_2019 <- glm(data = data_2019, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2019) # Hispanic logit 2019
+logit_model_hispanic_2014 <- glm(data = data_2014, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2014) # Hispanic logit 2014
+logit_model_hispanic_2013 <- glm(data = data_2013, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2013) # Hispanic logit 2013
+logit_model_hispanic_2012 <- glm(data = data_2012, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2012) # Hispanic logit 2012
+logit_model_hispanic_2011 <- glm(data = data_2011, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2011) # Hispanic logit 2011
+logit_model_hispanic_2010 <- glm(data = data_2010, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2010) # Hispanic logit 2010
+logit_model_hispanic_2009 <- glm(data = data_2009, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2009) # Hispanic logit 2009
+logit_model_hispanic_2008 <- glm(data = data_2008, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2008) # Hispanic logit 2008 
+logit_model_hispanic_2007 <- glm(data = data_2007, Hispanic ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_hispanic_2007) # Hispanic logit 2007
 
-ggplot(data = useable_data, mapping = aes(x = Leading.Cause, y = Age.Adjusted.Death.Rate)) +
-  geom_point(aes(col = Race.Ethnicity)) +
-  theme(axis.text.x = element_text(angle = 45, size = 1))
+# Black
+logit_model_black_2019 <- glm(data = data_2019, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2019) # Black logit 2019
+logit_model_black_2014 <- glm(data = data_2014, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2014) # Black logit 2014
+logit_model_black_2013 <- glm(data = data_2013, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2013) # Black logit 2013
+logit_model_black_2012 <- glm(data = data_2012, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2012) # Black logit 2012
+logit_model_black_2011 <- glm(data = data_2011, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2011) # Black logit 2011
+logit_model_black_2010 <- glm(data = data_2010, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2010) # Black logit 2010
+logit_model_black_2009 <- glm(data = data_2009, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2009) # Black logit 2009
+logit_model_black_2008 <- glm(data = data_2008, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2008) # Black logit 2008 
+logit_model_black_2007 <- glm(data = data_2007, Black ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_black_2007) # Black logit 2007
 
-ggplot(data = useable_data, mapping = aes(x = Sex, y = Age.Adjusted.Death.Rate)) +
-  geom_point()
-aggregate_sex_regression <- lm(data = useable_data, Age.Adjusted.Death.Rate ~ Sex)
-summary(aggregate_sex_regression)
-# Statistically significant relationship. Being male is associated with, on average for all years and all leading causes, 21 more deaths per 100000 people.
+# White
+logit_model_white_2019 <- glm(data = data_2019, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2019) # White logit 2019
+logit_model_white_2014 <- glm(data = data_2014, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2014) # White logit 2014
+logit_model_white_2013 <- glm(data = data_2013, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2013) # White logit 2013
+logit_model_white_2012 <- glm(data = data_2012, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2012) # White logit 2012
+logit_model_white_2011 <- glm(data = data_2011, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2011) # White logit 2011
+logit_model_white_2010 <- glm(data = data_2010, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2010) # White logit 2010
+logit_model_white_2009 <- glm(data = data_2009, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2009) # White logit 2009
+logit_model_white_2008 <- glm(data = data_2008, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2008) # White logit 2008 
+logit_model_white_2007 <- glm(data = data_2007, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2007) # White logit 2007
 
-aggregate_race_regression <- lm(data = useable_data, Age.Adjusted.Death.Rate ~ Hispanic + Black + White + Asian_and_Pacific_Islander)
-summary(aggregate_race_regression)
-# No overall statistically significant relationship, other than a lower death rate per 100000 for Asians and Pacific Islanders, and only significant with 95% confidence.
-
-
-
-
-
-
-
-#  -------------------------------------
-# levels(useable_data$Leading.Cause)
-# asthma_etc <- subset(useable_data, useable_data$Leading.Cause == "Chronic Lower Respiratory Diseases (J40-J47)")
-# mean_differences_2019_males_asthma <- NULL
-# for (race in c(17, 18, 20)) {
-#   var_1 <- asthma_etc$age_adjusted_var[asthma_etc$Sex == "Male" &
-#                                                 asthma_etc[, 19] == TRUE &
-#                                                 asthma_etc$Year == 2019]
-#   var_2 <- asthma_etc$age_adjusted_var[asthma_etc$Sex == "Male" &
-#                                          asthma_etc[, race] == TRUE &
-#                                          asthma_etc$Year == 2019]
-#   p_1 <- asthma_etc$age_adjusted_p[asthma_etc$Sex == "Male" &
-#                                      asthma_etc[, 19] == TRUE &
-#                                      asthma_etc$Year == 2019]
-#   p_2 <- asthma_etc$age_adjusted_p[asthma_etc$Sex == "Male" &
-#                                      asthma_etc[, race] == TRUE &
-#                                      asthma_etc$Year == 2019]
-#   stat <- diff_of_means_test_stat(var1 = var_1, 
-#                                        var2 = var_2, 
-#                                        n1 = 100000, 
-#                                        n2 = 100000, 
-#                                        diff = p_1 - p_2)
-#   mean_differences_2019_males_asthma <- rbind(mean_differences_2019_males_asthma, 
-#                                               c(cause, race, stat))
-# }
-# colnames(mean_differences_2019_males_asthma) <- c("Cause", "Race", "Stat")
-# mean_differences_2019_males_asthma <- as.data.frame(mean_differences_2019_males_asthma)
-# mean_differences_2019_males_asthma$Race[mean_differences_2019_males_asthma[, 2] == 17] <- "Hispanic"
-# mean_differences_2019_males_asthma$Race[mean_differences_2019_males_asthma[, 2] == 18] <- "Black"
-# mean_differences_2019_males_asthma$Race[mean_differences_2019_males_asthma[, 2] == 20] <- "Asian and Pacific Islander"
-# mean_differences_2019_males_asthma <- cbind(mean_differences_2019_males_asthma, 
-#                                             pnorm(as.numeric(mean_differences_2019_males_asthma$Stat)))
-# 
-# mean_differences_2019_females_asthma <- NULL
-# for (race in c(17, 18, 20)) {
-#   var_1 <- asthma_etc$age_adjusted_var[asthma_etc$Sex == "Female" &
-#                                          asthma_etc[, 19] == TRUE &
-#                                          asthma_etc$Year == 2019]
-#   var_2 <- asthma_etc$age_adjusted_var[asthma_etc$Sex == "Female" &
-#                                          asthma_etc[, race] == TRUE &
-#                                          asthma_etc$Year == 2019]
-#   p_1 <- asthma_etc$age_adjusted_p[asthma_etc$Sex == "Female" &
-#                                      asthma_etc[, 19] == TRUE &
-#                                      asthma_etc$Year == 2019]
-#   p_2 <- asthma_etc$age_adjusted_p[asthma_etc$Sex == "Female" &
-#                                      asthma_etc[, race] == TRUE &
-#                                      asthma_etc$Year == 2019]
-#   stat <- diff_of_means_test_stat(var1 = var_1, 
-#                                   var2 = var_2, 
-#                                   n1 = 100000, 
-#                                   n2 = 100000, 
-#                                   diff = p_1 - p_2)
-#   mean_differences_2019_females_asthma <- rbind(mean_differences_2019_females_asthma, 
-#                                               c(cause, race, stat))
-# }
-# colnames(mean_differences_2019_females_asthma) <- c("Cause", "Race", "Stat")
-# mean_differences_2019_females_asthma <- as.data.frame(mean_differences_2019_males_asthma)
-# mean_differences_2019_females_asthma$Race[mean_differences_2019_males_asthma[, 2] == 17] <- "Hispanic"
-# mean_differences_2019_females_asthma$Race[mean_differences_2019_males_asthma[, 2] == 18] <- "Black"
-# mean_differences_2019_females_asthma$Race[mean_differences_2019_males_asthma[, 2] == 20] <- "Asian and Pacific Islander"
-# mean_differences_2019_females_asthma <- cbind(mean_differences_2019_females_asthma, 
-#                                             pnorm(as.numeric(mean_differences_2019_females_asthma$Stat)))
-# -----------------------------------
+# White
+logit_model_white_2019 <- glm(data = data_2019, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2019) # White logit 2019
+logit_model_white_2014 <- glm(data = data_2014, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2014) # White logit 2014
+logit_model_white_2013 <- glm(data = data_2013, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2013) # White logit 2013
+logit_model_white_2012 <- glm(data = data_2012, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2012) # White logit 2012
+logit_model_white_2011 <- glm(data = data_2011, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2011) # White logit 2011
+logit_model_white_2010 <- glm(data = data_2010, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2010) # White logit 2010
+logit_model_white_2009 <- glm(data = data_2009, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2009) # White logit 2009
+logit_model_white_2008 <- glm(data = data_2008, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2008) # White logit 2008 
+logit_model_white_2007 <- glm(data = data_2007, White ~ Age.Adjusted.Death.Rate, family = binomial(link = logit))
+summary(logit_model_white_2007) # White logit 2007
 
 
 
-# Multivariate dummy regression for age adjusted death rate over race for all years and all leading causes
-model_2019_for_race_predictors <- lm(data = data_2019, 
-                                         Age.Adjusted.Death.Rate ~ Hispanic + Black + White
-                                         + Asian_and_Pacific_Islander)
-summary(model_2019_for_race_predictors)
-
-# Logistic regression of death rate over black
-logistic_regression_black <- glm(data = useable_data, Black ~ Age.Adjusted.Death.Rate, 
-                                 family = binomial(link = logit))
-summary(logistic_regression_black)
-coefficients_black <- coefficients(logistic_regression_black)
-odds_black_given_death_rate <- exp(coefficients_black[2])
-# A statistically significant increase in the odds of being black given an increase in the death rate. For every 1 extra death per 100000, 
-# the odds of the death rate being a black death rate increases by 1.003972. Can I multiply this linerarly?
-odds_black_given_death_rate*100
-as.numeric(data_with_race_factors$Black)
-ggplot(data = useable_data, aes(x = Age.Adjusted.Death.Rate, y = as.numeric(Black))) +
-  geom_point() +
-  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE)
-
-
-mean_black <- mean(data_with_race_factors$Age.Adjusted.Death.Rate[data_with_race_factors$Black == 1])
-mean_not_black <- mean(data_with_race_factors$Age.Adjusted.Death.Rate[data_with_race_factors$Black == 0])
-var_black <- var(data_with_race_factors$Age.Adjusted.Death.Rate[data_with_race_factors$Black == 1])
-var_not_black <- var(data_with_race_factors$Age.Adjusted.Death.Rate[data_with_race_factors$Black == 0])
-
-black_vs_rest_se <- se_of_mean_diff(variance1 = var_black, variance2 = var_not_black, 
-                n1 = length(data_with_race_factors$Age.Adjusted.Death.Rate[data_with_race_factors$Black == 1]),
-                n2 = length(data_with_race_factors$Age.Adjusted.Death.Rate[data_with_race_factors$Black == 0]))
-black_vs_rest_test_stat <- diff_of_means_test_stat(
-  se = black_vs_rest_se, diff = (mean_black - mean_not_black))
-pnorm(black_vs_rest_test_stat)
-
-str(data_with_race_factors)
-for (race in colnames(data_with_race_factors[,8:12])) {
-  plot <- ggplot(data = data_with_race_factors, aes(x = race, y = Age.Adjusted.Death.Rate)) +
-    geom_point() +
-    geom_smooth(method = "lm", se = FALSE)
-  return(plot)
-}
-ggplot(data = data_with_race_factors, aes(x = Hispanic, y = Age.Adjusted.Death.Rate)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-data_hispanic$Hispanic <- factor(data_hispanic$Hispanic)
-levels(data_hispanic$Hispanic)
-ggplot(data = data_hispanic, aes(x = Age.Adjusted.Death.Rate, y = Hispanic)) +
-  geom_point() +
-  geom_smooth(method = "glm", se = FALSE, method.args = list(family = 'binomial'))
-logit <- glm(data_hispanic$Hispanic ~ data_hispanic$Age.Adjusted.Death.Rate, 
-             family = binomial(link = "logit"))
-plot(fitted.values(logit))
-
-str(data_hispanic$Hispanic)
-data_hispanic$Hispanic <- factor(data_hispanic$Hispanic)
-summary(data_hispanic$Hispanic)
-good_data = data_hispanic$Age.Adjusted.Death.Rate > 0.1
-useable_data <- subset(data_hispanic, good_data)
-useable_data$Age.Adjusted.Death.Rate <- as.numeric(useable_data$Age.Adjusted.Death.Rate)
-logit <- glm(useable_data$Hispanic ~ useable_data$Age.Adjusted.Death.Rate, 
-             family = binomial(link = "logit"))
-plot(logit)
-summary(logit)
-ggplot(data = useable_data, aes(Age.Adjusted.Death.Rate, as.numeric(Hispanic))) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-
-
-# Functions:
-# Standard error of difference in means
-se_of_mean_difference <- function(variance1, variance2, n1, n2) {
-  se <- sqrt((variance1/n1) + (variance2/n2))
-  return(se)
-}
-# Standardized test stat for difference in means
-test_stat_mean_difference <- function(mean1, mean2, se) {
-  diff <- mean1 - mean2
-  test_stat <- diff / se
-  return(test_stat)
-}
-
-men <- subset(data, data$Sex == "Male")
-women <- subset(data, data$Sex == "Female")
-mean_male <- mean(as.numeric(men$Death.Rate), na.rm = TRUE)
-mean_female <- mean(as.numeric(women$Death.Rate), na.rm = TRUE)
-sd_male_death_rate <- sd(men$Death.Rate, na.rm = TRUE)
-sd_female_deeath_rate <- sd(women$Death.Rate, na.rm = TRUE)
-var_male <- sd_male_death_rate^2
-var_female <- sd_female_deeath_rate^2
-n_male <- nrow(men)
-n_female <- nrow(women)
-?matrix
-se_of_men_and_women <- se_of_mean_difference(variance1 = var_male, variance2 = var_female,
-                                             n1 = n_male, n2 = n_female)
-test_stat_men_and_women_death_rate <- test_stat_mean_difference(mean1 = mean_male,
-                                                                mean2 = mean_female,
-                                                                se = se_of_men_and_women)
-pnorm(test_stat_men_and_women_death_rate, lower.tail = FALSE)
-# Can NOT reject the null hypothesis that there is no overall difference between male and 
-# female death rates for all leading causes taken together.
-
-# Regressing death rate over categorical variable of Hispanic
-data$Race.Ethnicity <-  as.factor(data$Race.Ethnicity)
-levels(data$Race.Ethnicity)
-data_races <- data.frame(matrix(data = NA, ncol = 0, nrow = nrow(data)))
-for (level in levels(data$Race.Ethnicity)) {
-  column <- ifelse(data$Race.Ethnicity == level, 1, 0)
-  data_races <- cbind(data_races, column)
-  colnames(data_races) <- level
-}  
-data_races <- cbind(data, Hispanic = ifelse(data$Race.Ethnicity == "Hispanic", 1, 0),
-                    )
-data_hispanic$Death.Rate <- as.numeric(data_hispanic$Death.Rate)
-good_data_hispanic <- subset(data_hispanic, !is.na(data_hispanic$Death.Rate))
-death_rate_over_hispanic <- lm(data = good_data_hispanic,
-                               Death.Rate ~ Hispanic)
-death_rate_over_hispanic
-plot(x = good_data_hispanic$Hispanic, y = good_data_hispanic$Death.Rate)
-
-data_hispanic$Hispanic <-  factor(data_hispanic$Hispanic, levels = c(0,1), 
-                                     labels = c("Other","Hispanic"))
-levels(data_hispanic$Hispanic)
-as.numeric(data_hispanic$Hispanic)
