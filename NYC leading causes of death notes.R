@@ -185,7 +185,6 @@ for (multiplier in c(1, 100, 200, 300, 400, 500)) {
                                  c(multiplier, odds_black_given_death_rate, p_black_given_death_rate, odds_asian_and_pi_given_death_rate, p_asian_and_pi_given_death_rate))
 }
 colnames(odds_race_given_death_rate_all_years) <- c("Increase in death rate", "Black odds change", "Probability Black", "Asian and PI odds change", "Probability Asian and PI")
-odds_race_given_death_rate_all_years <- as.data.frame(odds_race_given_death_rate_all_years)
     # For an increase in the death rate of 100, the odds of being black increases by about 50%
     # A similar but negative relationship exists for the Asian and Pacific Islander Population
 
@@ -699,6 +698,16 @@ lm_useable_male_hypertension <- lm(data = subset(useable_male, useable_male$Lead
                                      Age.Adjusted.Death.Rate ~ Dummy.Race)
 summary(lm_useable_male_hypertension)
 # Significant relationship with 12 more deaths per 100000 expected for black men for hypertension as leading cause
+
+data_2007_ordered_death_rate <- data_2007[order(data_2007$Age.Adjusted.Death.Rate),]
+data_2008_ordered_death_rate <- data_2008[order(data_2008$Age.Adjusted.Death.Rate),]
+data_2009_ordered_death_rate <- data_2009[order(data_2009$Age.Adjusted.Death.Rate),]
+data_2010_ordered_death_rate <- data_2010[order(data_2010$Age.Adjusted.Death.Rate),]
+data_2011_ordered_death_rate <- data_2011[order(data_2011$Age.Adjusted.Death.Rate),]
+data_20012_ordered_death_rate <- data_2012[order(data_2012$Age.Adjusted.Death.Rate),]
+data_2013_ordered_death_rate <- data_2013[order(data_2013$Age.Adjusted.Death.Rate),]
+data_2014_ordered_death_rate <- data_2014[order(data_2014$Age.Adjusted.Death.Rate),]
+data_2019_ordered_death_rate <- data_2019[order(data_2019$Age.Adjusted.Death.Rate),]
 
 
 
